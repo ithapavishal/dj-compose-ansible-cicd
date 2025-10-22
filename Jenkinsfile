@@ -69,17 +69,17 @@ pipeline {
             }
         }
 
-        stage('Setup Ansible Dependencies') {
-            steps {
-                sh '''
-                echo "Installing Ansible and Docker dependencies..."
-                pip3 install ansible docker
+        // stage('Setup Ansible Dependencies') {
+        //     steps {
+        //         sh '''
+        //         echo "Installing Ansible and Docker dependencies..."
+        //         pip3 install ansible docker
                 
-                echo "Installing Ansible Docker collection..."
-                ansible-galaxy collection install community.docker
-                '''
-            }
-        }
+        //         echo "Installing Ansible Docker collection..."
+        //         ansible-galaxy collection install community.docker
+        //         '''
+        //     }
+        // }
 
         stage('Deploy to Development') {
             steps {
