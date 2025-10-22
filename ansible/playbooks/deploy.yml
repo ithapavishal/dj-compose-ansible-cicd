@@ -1,0 +1,11 @@
+---
+- name: Deploy Django Application
+  hosts: web
+  vars_files:
+    - "../group_vars/{{ env }}.yml"
+  
+  roles:
+    - role: docker_setup
+      tags: docker
+    - role: app_deploy
+      tags: app
