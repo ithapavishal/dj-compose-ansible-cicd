@@ -29,6 +29,18 @@ pipeline {
             }
         }
 
+        stage('Fix SSH Key Permissions') {
+            steps {
+                sh '''
+                echo "Fixing SSH key permissions..."
+                sudo chmod 600 /home/vagrant/ansible-keys
+                sudo chown vagrant:vagrant /home/vagrant/ansible-keys
+                echo "Key permissions after fix:"
+                ls -la /home/vagrant/ansible-keys
+                '''
+            }
+        }
+
         stage('Build & Start with Docker Compose') {
             steps {
                 sh '''
