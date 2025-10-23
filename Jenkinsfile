@@ -14,29 +14,29 @@ pipeline {
             }
         }
 
+        // stage('Setup Environment') {
+        //     steps {
+        //         sh '''
+        //         echo "[defaults]" > ansible.cfg
+        //         echo "host_key_checking = False" >> ansible.cfg
+        //         echo "remote_user = vagrant" >> ansible.cfg
+        //         echo "private_key_file = /home/vagrant/ansible-keys" >> ansible.cfg
+
+        //         echo "inventory = inventory/" >> ansible.cfg
+        //         echo "roles_path = roles" >> ansible.cfg
+                
+        //         '''
+        //     }
+        // }
+
         stage('Setup Environment') {
             steps {
                 sh '''
                 echo "[defaults]" > ansible.cfg
                 echo "host_key_checking = False" >> ansible.cfg
-                echo "remote_user = vagrant" >> ansible.cfg
-                echo "private_key_file = /home/vagrant/ansible-keys" >> ansible.cfg
-
                 echo "inventory = inventory/" >> ansible.cfg
                 echo "roles_path = roles" >> ansible.cfg
                 
-                '''
-            }
-        }
-
-        stage('Fix SSH Key Permissions') {
-            steps {
-                sh '''
-                echo "Fixing SSH key permissions..."
-                sudo chmod 600 /home/vagrant/ansible-keys
-                sudo chown vagrant:vagrant /home/vagrant/ansible-keys
-                echo "Key permissions after fix:"
-                ls -la /home/vagrant/ansible-keys
                 '''
             }
         }
@@ -98,6 +98,7 @@ pipeline {
                     sh '''
                     ansible-playbook -i ansible/inventory/dev.ini ansible/playbooks/deploy.yml \
                     --extra-vars "env=dev image_tag=$DOCKERHUB_IMAGE:$BUILD_NUMBER"
+                    --user vagrant
                     '''
                 }
             }
@@ -112,6 +113,7 @@ pipeline {
                     sh '''
                     ansible-playbook -i ansible/inventory/prod.ini ansible/playbooks/deploy.yml \
                     --extra-vars "env=prod image_tag=$DOCKERHUB_IMAGE:$BUILD_NUMBER"
+                    --user vagrant
                     '''
                 }
             }
