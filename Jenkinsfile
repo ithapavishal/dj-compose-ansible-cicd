@@ -28,35 +28,60 @@ pipeline {
 
         stage('Build & Start with Docker Compose') {
             steps {
-                script {
-                    withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
-                        sh '''
-                        echo "Building and starting Docker Compose services..."
-                        docker-compose down || true
-                        docker-compose build --no-cache
-                        docker-compose up -d
-                        
-                        echo "Waiting for services to be healthy..."
-                        sleep 30
-                        
-                        echo "Checking running containers..."
-                        docker-compose ps
-                        
-                        echo "Checking Django service logs..."
-                        docker-compose logs web_services
-                        
-                        echo "Checking PostgreSQL service logs..."
-                        docker-compose logs postgres_db
-                        '''
-                    }
-                }
+                sh '''
+                echo "Building and starting Docker Compose services..."
+                docker compose down --remove-orphans  # Clean up previous deployment
+                docker compose build                  # Build fresh images
+                docker compose up -d                  # Start new containers in detached mode
+
+                echo "Waiting for services to be healthy..."
+                sleep 30
+                
+                echo "Checking running containers..."
+                docker compose ps
+                
+                echo "Checking Django service logs..."
+                docker compose logs web_services
+                
+                echo "Checking PostgreSQL service logs..."
+                docker compose logs postgres_db
+                '''
             }
         }
+
+        // stage('Build & Start with Docker Compose') {
+        //     steps {
+        //         script {
+        //             withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
+        //                 sh '''
+        //                 echo "Building and starting Docker Compose services..."
+                        
+                        
+        //                 echo "Waiting for services to be healthy..."
+        //                 sleep 30
+                        
+        //              docker-compose down || true
+        //                 docker-compose build --no-cache
+        //                 docker-compose up -d   echo "Checking running containers..."
+        //                 docker-compose ps
+                        
+        //                 echo "Checking Django service logs..."
+        //                 docker-compose logs web_services
+                        
+        //                 echo "Checking PostgreSQL service logs..."
+        //                 docker-compose logs postgres_db
+        //                 '''
+        //             }
+        //         }
+        //     }
+        // }
+
 
         stage('Push to DockerHub') {
             steps {
                 script {
                     withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
+                        // push the web_services image that was built
                         sh '''
                         echo "Tagging and pushing image to DockerHub..."
                         docker tag ${COMPOSE_PROJECT_NAME}_web_services:latest $DOCKERHUB_IMAGE:${BUILD_NUMBER}
@@ -113,7 +138,7 @@ pipeline {
             
             sh '''
             echo "Cleaning up Docker resources..."
-            docker-compose down || true
+            docker compose down || true
             docker system prune -f || true
             '''
         }
