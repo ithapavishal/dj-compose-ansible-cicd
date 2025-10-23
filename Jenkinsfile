@@ -21,6 +21,10 @@ pipeline {
                 echo "host_key_checking = False" >> ansible.cfg
                 echo "remote_user = vagrant" >> ansible.cfg
                 echo "private_key_file = /home/vagrant/ansible-keys" >> ansible.cfg
+
+                echo "inventory = inventory/" >> ansible.cfg
+                echo "roles_path = roles" >> ansible.cfg
+                
                 '''
             }
         }
