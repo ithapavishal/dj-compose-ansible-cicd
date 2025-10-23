@@ -78,20 +78,32 @@ pipeline {
 
 
         stage('Push to DockerHub') {
-            steps {
-                script {
-                    withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
-                        // push the web_services image that was built
-                        sh '''
-                        echo "Tagging and pushing image to DockerHub..."
-                        docker tag ${COMPOSE_PROJECT_NAME}_web_services:latest $DOCKERHUB_IMAGE:${BUILD_NUMBER}
-                        docker tag ${COMPOSE_PROJECT_NAME}_web_services:latest $DOCKERHUB_IMAGE:latest
-                        docker push $DOCKERHUB_IMAGE:${BUILD_NUMBER}
-                        docker push $DOCKERHUB_IMAGE:latest
-                        '''
+        steps {
+            script {
+                withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
+                    // Use the correct image name format (with hyphens)
+                    sh '''
+                    echo "Tagging and pushing image to DockerHub..."
+                    
+                    # Get the actual image name from docker compose
+                    IMAGE_NAME="${COMPOSE_PROJECT_NAME}-web_services"
+                    
+                    # Tag with both build number and latest
+                    docker tag ${IMAGE_NAME}:latest $DOCKERHUB_IMAGE:${BUILD_NUMBER}
+                    docker tag ${IMAGE_NAME}:latest $DOCKERHUB_IMAGE:latest
+                    
+                    # Push both tags
+                    docker push $DOCKERHUB_IMAGE:${BUILD_NUMBER}
+                    docker push $DOCKERHUB_IMAGE:latest
+                    
+                    echo "Successfully pushed images:"
+                    echo "- $DOCKERHUB_IMAGE:${BUILD_NUMBER}"
+                    echo "- $DOCKERHUB_IMAGE:latest"
+                    '''
                     }
                 }
             }
+        }
         }
 
         // stage('Setup Ansible Dependencies') {
@@ -105,6 +117,18 @@ pipeline {
         //         '''
         //     }
         // }
+
+
+        stage('Debug Images') {
+        steps {
+            sh '''
+            echo "Available Docker images:"
+            docker images
+            echo "Docker compose images:"
+            docker compose images
+            '''
+            }
+        }
 
         stage('Deploy to Development') {
             steps {
