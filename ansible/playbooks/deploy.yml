@@ -2,10 +2,23 @@
 - name: Deploy Django Application
   hosts: web
   vars_files:
-    - "../group_vars/{{ env }}.yml"
+    - "{{ playbook_dir }}/../group_vars/{{ env }}.yml"
   
   roles:
-    - role: docker_setup
+    - role: "{{ playbook_dir }}/../roles/docker_setup"
       tags: docker
-    - role: app_deploy
+    - role: "{{ playbook_dir }}/../roles/app_deploy"
       tags: app
+
+
+# ---
+# - name: Deploy Django Application
+#   hosts: web
+#   vars_files:
+#     - "../group_vars/{{ env }}.yml"
+  
+#   roles:
+#     - role: docker_setup
+#       tags: docker
+#     - role: app_deploy
+#       tags: app
