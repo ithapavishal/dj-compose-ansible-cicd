@@ -79,18 +79,38 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
-                        // Use the correct image name format (with hyphens instead of underscores)
                         sh '''
                         echo "Tagging and pushing image to DockerHub..."
                         docker tag ${COMPOSE_PROJECT_NAME}-web_services:latest $DOCKERHUB_IMAGE:${BUILD_NUMBER}
                         docker tag ${COMPOSE_PROJECT_NAME}-web_services:latest $DOCKERHUB_IMAGE:latest
-                        docker push $DOCKERHUB_IMAGE:${BUILD_NUMBER}
-                        docker push $DOCKERHUB_IMAGE:latest
+
+                        echo "Pushing versioned tag..."
+                        docker push $DOCKERHUB_IMAGE:${BUILD_NUMBER} || (echo "Retrying push..." && sleep 10 && docker push $DOCKERHUB_IMAGE:${BUILD_NUMBER})
+
+                        echo "Pushing latest tag..."
+                        docker push $DOCKERHUB_IMAGE:latest || (echo "Retrying push..." && sleep 10 && docker push $DOCKERHUB_IMAGE:latest)
                         '''
                     }
                 }
             }
         }
+
+        // stage('Push to DockerHub') {
+        //     steps {
+        //         script {
+        //             withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
+        //                 // Use the correct image name format (with hyphens instead of underscores)
+        //                 sh '''
+        //                 echo "Tagging and pushing image to DockerHub..."
+        //                 docker tag ${COMPOSE_PROJECT_NAME}-web_services:latest $DOCKERHUB_IMAGE:${BUILD_NUMBER}
+        //                 docker tag ${COMPOSE_PROJECT_NAME}-web_services:latest $DOCKERHUB_IMAGE:latest
+        //                 docker push $DOCKERHUB_IMAGE:${BUILD_NUMBER}
+        //                 docker push $DOCKERHUB_IMAGE:latest
+        //                 '''
+        //             }
+        //         }
+        //     }
+        // }
 
         stage('Deploy to Development') {
             steps {
