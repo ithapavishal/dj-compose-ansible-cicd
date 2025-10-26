@@ -9,8 +9,7 @@
 
 - name: Copy docker-compose.yml
   ansible.builtin.copy:
-
-    src: "{{ playbook_dir }}/../../docker-compose.yml" 
+    src: "{{ playbook_dir }}/../../docker-compose.yml"
     dest: "/home/{{ ansible_user }}/{{ project_name }}/docker-compose.yml"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
@@ -30,29 +29,24 @@
     tag: "{{ image_tag.split(':')[-1] }}"
     source: pull
 
-- name: Stop and remove existing containers
-  community.docker.docker_compose:
-    project_src: "/home/{{ ansible_user }}/{{ project_name }}"
-    state: absent
-    files:
-      - docker-compose.yml
+- name: Stop and remove existing containers using Docker Compose V2
+  ansible.builtin.shell:
+    cmd: docker compose down
+    chdir: "/home/{{ ansible_user }}/{{ project_name }}"
+  ignore_errors: yes
 
-- name: Start containers with Docker Compose
-  community.docker.docker_compose:
-    project_src: "/home/{{ ansible_user }}/{{ project_name }}"
-    state: present
-    build: no
-    pull: yes
-    files:
-      - docker-compose.yml
+- name: Start containers with Docker Compose V2
+  ansible.builtin.shell:
+    cmd: docker compose up -d --build
+    chdir: "/home/{{ ansible_user }}/{{ project_name }}"
 
 - name: Wait for services to be ready
   ansible.builtin.wait_for:
     timeout: 60
 
 - name: Check container status
-  ansible.builtin.command: docker compose ps  
-  args:
+  ansible.builtin.command:
+    cmd: docker compose ps
     chdir: "/home/{{ ansible_user }}/{{ project_name }}"
   register: container_status
 
@@ -73,8 +67,8 @@
   ignore_errors: yes
 
 - name: Show application logs if health check failed
-  ansible.builtin.command: docker compose logs web_services  
-  args:
+  ansible.builtin.command:
+    cmd: docker compose logs web_services
     chdir: "/home/{{ ansible_user }}/{{ project_name }}"
   when: health_check is failed
   register: app_logs
