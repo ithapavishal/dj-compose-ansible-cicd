@@ -17,11 +17,12 @@ services:
 
   web_services:
     container_name: django_compose_container
-    # image: employee_web_services:latest
+    image: employee_web_services:latest
     build: .
     command: >
       sh -c "python manage.py migrate --noinput &&
-             python manage.py runserver 0.0.0.0:8000"
+      python manage.py collectstatic --noinput &&
+      python manage.py runserver 0.0.0.0:8000"
 
     # command: >
     # sh -c "python manage.py makemigrations &&
@@ -44,6 +45,8 @@ services:
     
     volumes:
       - django_app_vol:/app
+      - ./static:/app/static  # Add this if you have static files
+      - ./templates:/app/templates  # Add this if you have custom templates
     
     networks:
       - mydjangocomposenetwork

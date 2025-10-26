@@ -117,7 +117,7 @@ pipeline {
                 sshagent(credentials: ['vagrant-ssh-key']) {
                     sh '''
                     ansible-playbook -i ansible/inventory/dev.ini ansible/playbooks/deploy.yml \
-                    --extra-vars "env=dev image_tag=$DOCKERHUB_IMAGE:$BUILD_NUMBER"
+                    --extra-vars "env=dev image_tag=$DOCKERHUB_IMAGE:$BUILD_NUMBER" \
                     --user vagrant
                     '''
                 }
@@ -132,7 +132,7 @@ pipeline {
                 sshagent(credentials: ['vagrant-ssh-key']) {
                     sh '''
                     ansible-playbook -i ansible/inventory/prod.ini ansible/playbooks/deploy.yml \
-                    --extra-vars "env=prod image_tag=$DOCKERHUB_IMAGE:$BUILD_NUMBER"
+                    --extra-vars "env=prod image_tag=$DOCKERHUB_IMAGE:$BUILD_NUMBER" \
                     --user vagrant
                     '''
                 }
