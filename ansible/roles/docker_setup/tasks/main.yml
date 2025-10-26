@@ -1,48 +1,48 @@
 ---
-- name: 1. Install general prerequisites
-  ansible.builtin.apt:
-    name:
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - gnupg
-      - lsb-release
-      - python3-pip
-      - software-properties-common
-    state: present
-    update_cache: yes
+# - name: 1. Install general prerequisites
+#   ansible.builtin.apt:
+#     name:
+#       - apt-transport-https
+#       - ca-certificates
+#       - curl
+#       - gnupg
+#       - lsb-release
+#       - python3-pip
+#       - software-properties-common
+#     state: present
+#     update_cache: yes
 
-- name: 2. Clean up old Docker GPG key (prevents 'Conflicting values' error)
-  ansible.builtin.file:
-    path: /usr/share/keyrings/docker-archive-keyring.gpg
-    state: absent
-  # This task is crucial for cleaning up conflicts from previous installations.
-  ignore_errors: true
+# - name: 2. Clean up old Docker GPG key (prevents 'Conflicting values' error)
+#   ansible.builtin.file:
+#     path: /usr/share/keyrings/docker-archive-keyring.gpg
+#     state: absent
+#   # This task is crucial for cleaning up conflicts from previous installations.
+#   ignore_errors: true
 
-- name: 3. Add Docker GPG key
-  ansible.builtin.apt_key:
-    url: https://download.docker.com/linux/ubuntu/gpg
-    keyring: /usr/share/keyrings/docker-archive-keyring.gpg
-    state: present
+# - name: 3. Add Docker GPG key
+#   ansible.builtin.apt_key:
+#     url: https://download.docker.com/linux/ubuntu/gpg
+#     keyring: /usr/share/keyrings/docker-archive-keyring.gpg
+#     state: present
 
-- name: 4. Add Docker repository (Supports ARM64 and AMD64)
-  ansible.builtin.apt_repository:
-    # Use ansible_architecture fact to set the correct repo arch (aarch64 is ARM64)
-    repo: "deb [arch={{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }} signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
-    state: present
-    filename: docker
-    update_cache: yes
+# - name: 4. Add Docker repository (Supports ARM64 and AMD64)
+#   ansible.builtin.apt_repository:
+#     # Use ansible_architecture fact to set the correct repo arch (aarch64 is ARM64)
+#     repo: "deb [arch={{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }} signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+#     state: present
+#     filename: docker
+#     update_cache: yes
 
-- name: 5. Install Docker Engine and the Docker Compose CLI plugin
-  # The docker-ce package includes the 'docker compose' plugin natively.
-  ansible.builtin.apt:
-    name:
-      - docker-ce
-      - docker-ce-cli
-      - containerd.io
-      - docker-compose-plugin # This installs the 'docker compose' command
-    state: present
-    update_cache: yes
+# - name: 5. Install Docker Engine and the Docker Compose CLI plugin
+#   # The docker-ce package includes the 'docker compose' plugin natively.
+#   ansible.builtin.apt:
+#     name:
+#       - docker-ce
+#       - docker-ce-cli
+#       - containerd.io
+#       - docker-compose-plugin # This installs the 'docker compose' command
+#     state: present
+#     update_cache: yes
 
 # Note: The 'docker compose' plugin replaces the separate docker-compose binary.
 # The previous task to download docker-compose is no longer needed.
