@@ -9,9 +9,8 @@
 
 - name: Copy docker-compose.yml
   ansible.builtin.copy:
-    # Use playbook_dir to reliably calculate the path from the Playbook location 
-    # (ansible/playbooks) up one level (..) to the repo root where docker-compose.yml resides.
-    src: "{{ playbook_dir }}/../docker-compose.yml" 
+
+    src: "{{ playbook_dir }}/../../docker-compose.yml" 
     dest: "/home/{{ ansible_user }}/{{ project_name }}/docker-compose.yml"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
