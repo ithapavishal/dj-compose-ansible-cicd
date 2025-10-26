@@ -62,7 +62,7 @@
     timeout: 30
   register: health_check
   until: health_check.status in [200, 302, 404]
-  retries: 15
+  retries: 1
   delay: 5
   ignore_errors: yes
 
