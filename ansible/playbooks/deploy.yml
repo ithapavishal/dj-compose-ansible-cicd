@@ -4,9 +4,8 @@
   vars_files:
     - "{{ playbook_dir }}/../group_vars/{{ env }}.yml"
   
-  # Add this line to run all tasks with elevated privileges
-  become: yes
-  
+  become: yes  # <--- CRUCIAL: Must be present to run apt commands
+
   roles:
     - role: "{{ playbook_dir }}/../roles/docker_setup"
       tags: docker
