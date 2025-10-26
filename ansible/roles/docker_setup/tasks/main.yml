@@ -1,10 +1,10 @@
 ---
-# --- New Cleanup Tasks to prevent APT conflicts ---
+# --- Cleanup Tasks to prevent APT conflicts ---
 - name: 0.a. Clean up old Docker GPG keys (if they exist)
   ansible.builtin.file:
     path: /etc/apt/trusted.gpg.d/docker.gpg
     state: absent
-  ignore_errors: yes # The file might not exist
+  ignore_errors: yes
 
 - name: 0.b. Remove conflicting Docker APT source file (if it exists)
   ansible.builtin.file:
@@ -17,8 +17,7 @@
     path: /usr/share/keyrings/docker-archive-keyring.gpg
     state: absent
   ignore_errors: yes
-# --- End Cleanup Tasks ---
- 
+
 - name: 1. Install general prerequisites
   ansible.builtin.apt:
     name:
@@ -32,61 +31,57 @@
     state: present
     update_cache: yes
 
-# - name: 2. Clean up old Docker GPG key (prevents 'Conflicting values' error)
-#   ansible.builtin.file:
-#     path: /usr/share/keyrings/docker-archive-keyring.gpg
-#     state: absent
-#   # This task is crucial for cleaning up conflicts from previous installations.
-#   ignore_errors: true
+- name: 2. Add Docker's official GPG key
+  ansible.builtin.apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
 
-# - name: 3. Add Docker GPG key
-#   ansible.builtin.apt_key:
-#     url: https://download.docker.com/linux/ubuntu/gpg
-#     keyring: /usr/share/keyrings/docker-archive-keyring.gpg
-#     state: present
+- name: 3. Add Docker repository (ARM64 compatible)
+  ansible.builtin.apt_repository:
+    repo: "deb [arch={{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    state: present
+    filename: docker
+    update_cache: yes
 
-# - name: 4. Add Docker repository (Supports ARM64 and AMD64)
-#   ansible.builtin.apt_repository:
-#     # Use ansible_architecture fact to set the correct repo arch (aarch64 is ARM64)
-#     repo: "deb [arch={{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }} signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
-#     state: present
-#     filename: docker
-#     update_cache: yes
+- name: 4. Install Docker Engine and Docker Compose Plugin
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-compose-plugin  # This installs the 'docker compose' V2 command
+    state: present
+    update_cache: yes
 
-# - name: 5. Install Docker Engine and the Docker Compose CLI plugin
-#   # The docker-ce package includes the 'docker compose' plugin natively.
-#   ansible.builtin.apt:
-#     name:
-#       - docker-ce
-#       - docker-ce-cli
-#       - containerd.io
-#       - docker-compose-plugin # This installs the 'docker compose' command
-#     state: present
-#     update_cache: yes
-
-# Note: The 'docker compose' plugin replaces the separate docker-compose binary.
-# The previous task to download docker-compose is no longer needed.
-
-- name: 6. Add remote user to docker group
+- name: 5. Add remote user to docker group
   ansible.builtin.user:
     name: "{{ ansible_user }}"
     groups: docker
     append: yes
 
-- name: 7. Install Docker Python library and dependencies (for Ansible to control Docker Compose)
+- name: 6. Install Docker Python library for Ansible
   ansible.builtin.pip:
     name:
-      - docker   
-      - PyYAML   
-      # Note: We do NOT typically install 'docker-compose' with pip if using the v2 CLI (`docker compose`)
+      - docker
+      - PyYAML
     state: present
 
-- name: 8. Ensure Docker service is running and enabled
+- name: 7. Ensure Docker service is running and enabled
   ansible.builtin.systemd:
     name: docker
     state: started
     enabled: yes
 
-- name: 9. Informational message about group membership
+- name: 8. Verify Docker Compose V2 is available
+  ansible.builtin.command:
+    cmd: docker compose version
+  register: docker_compose_version
+  changed_when: false
+
+- name: 9. Display Docker Compose version
+  ansible.builtin.debug:
+    msg: "Docker Compose version: {{ docker_compose_version.stdout }}"
+
+- name: 10. Informational message about group membership
   ansible.builtin.debug:
     msg: "The user '{{ ansible_user }}' has been added to the 'docker' group. A connection refresh is sometimes required for this to take effect."
