@@ -1,6 +1,6 @@
 ---
 - name: Create application directory
-  file:
+  ansible.builtin.file:
     path: "/home/{{ ansible_user }}/{{ project_name }}"
     state: directory
     owner: "{{ ansible_user }}"
@@ -8,15 +8,16 @@
     mode: '0755'
 
 - name: Copy docker-compose.yml
-  copy:
-    src: "{{ compose_file }}"
+  ansible.builtin.copy:
+  
+    src: "../docker-compose.yml" 
     dest: "/home/{{ ansible_user }}/{{ project_name }}/docker-compose.yml"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: '0644'
 
 - name: Create environment file from template
-  template:
+  ansible.builtin.template:
     src: env.j2
     dest: "/home/{{ ansible_user }}/{{ project_name }}/.env"
     owner: "{{ ansible_user }}"
@@ -46,21 +47,21 @@
       - docker-compose.yml
 
 - name: Wait for services to be ready
-  wait_for:
+  ansible.builtin.wait_for:
     timeout: 60
 
 - name: Check container status
-  command: docker-compose ps
+  ansible.builtin.command: docker compose ps  
   args:
     chdir: "/home/{{ ansible_user }}/{{ project_name }}"
   register: container_status
 
 - name: Show container status
-  debug:
+  ansible.builtin.debug:
     var: container_status.stdout_lines
 
 - name: Check application health
-  uri:
+  ansible.builtin.uri:
     url: "http://localhost:{{ app_port }}/"
     method: GET
     status_code: 200
@@ -72,13 +73,13 @@
   ignore_errors: yes
 
 - name: Show application logs if health check failed
-  command: docker-compose logs web_services
+  ansible.builtin.command: docker compose logs web_services  
   args:
     chdir: "/home/{{ ansible_user }}/{{ project_name }}"
   when: health_check is failed
   register: app_logs
 
 - name: Display application logs on failure
-  debug:
+  ansible.builtin.debug:
     var: app_logs.stdout_lines
   when: health_check is failed
