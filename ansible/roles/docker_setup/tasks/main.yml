@@ -1,16 +1,16 @@
 ---
-# - name: 1. Install general prerequisites
-#   ansible.builtin.apt:
-#     name:
-#       - apt-transport-https
-#       - ca-certificates
-#       - curl
-#       - gnupg
-#       - lsb-release
-#       - python3-pip
-#       - software-properties-common
-#     state: present
-#     update_cache: yes
+- name: 1. Install general prerequisites
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - python3-pip
+      - software-properties-common
+    state: present
+    update_cache: yes
 
 # - name: 2. Clean up old Docker GPG key (prevents 'Conflicting values' error)
 #   ansible.builtin.file:
@@ -53,9 +53,13 @@
     groups: docker
     append: yes
 
-- name: 7. Install Docker Python library (needed for Ansible's docker modules)
+- name: 7. Install Docker Python library and dependencies (for Ansible to control Docker Compose)
   ansible.builtin.pip:
-    name: docker
+    name:
+      - docker   
+      - PyYAML   
+      # Note: We do NOT typically install 'docker-compose' with pip if using the v2 CLI (`docker compose`)
+    state: present
 
 - name: 8. Ensure Docker service is running and enabled
   ansible.builtin.systemd:
