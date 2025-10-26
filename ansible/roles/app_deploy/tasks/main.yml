@@ -35,9 +35,9 @@
     chdir: "/home/{{ ansible_user }}/{{ project_name }}"
   ignore_errors: yes
 
-- name: Start containers with Docker Compose V2
+- name: Start containers with Docker Compose V2 (without build)
   ansible.builtin.shell:
-    cmd: docker compose up -d --build
+    cmd: docker compose up -d
     chdir: "/home/{{ ansible_user }}/{{ project_name }}"
 
 - name: Wait for services to be ready
