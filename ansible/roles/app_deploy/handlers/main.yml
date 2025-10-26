@@ -1,0 +1,15 @@
+---
+- name: restart app
+  community.docker.docker_compose:
+    project_src: "/home/{{ ansible_user }}/{{ project_name }}"
+    state: restarted
+    files:
+      - docker-compose.yml
+
+- name: recreate app
+  community.docker.docker_compose:
+    project_src: "/home/{{ ansible_user }}/{{ project_name }}"
+    state: present
+    recreate: yes
+    files:
+      - docker-compose.yml

@@ -1,0 +1,27 @@
+---
+- name: Deploy Django Application
+  hosts: web
+  vars_files:
+    - "{{ playbook_dir }}/../group_vars/{{ env }}.yml"
+  
+  # Add this line to run all tasks with elevated privileges
+  become: yes
+  
+  roles:
+    - role: "{{ playbook_dir }}/../roles/docker_setup"
+      tags: docker
+    - role: "{{ playbook_dir }}/../roles/app_deploy"
+      tags: app
+
+
+# ---
+# - name: Deploy Django Application
+#   hosts: web
+#   vars_files:
+#     - "../group_vars/{{ env }}.yml"
+  
+#   roles:
+#     - role: docker_setup
+#       tags: docker
+#     - role: app_deploy
+#       tags: app

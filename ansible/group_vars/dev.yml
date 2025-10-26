@@ -1,0 +1,17 @@
+compose_file: docker-compose.yml
+project_name: employee
+docker_image: "thapavishal/employee"
+env_file: .env
+app_port: 8000
+
+
+
+
+
+
+
+
+
+# Purpose:
+# Defines environment-specific variables for development deployment.
+# Jenkins passes some vars via --extra-vars, but others (like Compose file name, project name, and env file) are stored here.
